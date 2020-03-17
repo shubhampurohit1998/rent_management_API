@@ -1,7 +1,8 @@
-from django.contrib.auth import get_user_model
+# from django.contrib.auth import get_user_model
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 from rest_framework import status
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -10,6 +11,7 @@ from UserApp.serializers import *
 from rest_framework import mixins
 from rest_framework import generics
 from rest_framework import viewsets
+
 User = get_user_model()
 
 """ APIView based view """
@@ -125,6 +127,7 @@ class PropertyList(mixins.CreateModelMixin,
                    generics.GenericAPIView):
     queryset = Property.objects.all()
     serializer_class = PropertySerializer
+
     # Don't specify  serializer_class as
     # "serializer_class = UserSerializer(user)"  otherwise it gonna start problem
 
@@ -157,6 +160,7 @@ class UserPropertyList(mixins.ListModelMixin,
     def get_queryset(self):
         queryset = Property.objects.filter(user_id=self.kwargs["pk"])
         return queryset
+
     serializer_class = PropertySerializer
 
     def get(self, request, *args, **kwargs):
@@ -168,6 +172,7 @@ class PropertyRentDetail(mixins.ListModelMixin,
     def get_queryset(self):
         queryset = Rent.objects.filter(property_id=self.kwargs["pk"])
         return queryset
+
     serializer_class = RentSerializer
 
     def get(self, request, *args, **kwargs):
@@ -175,7 +180,6 @@ class PropertyRentDetail(mixins.ListModelMixin,
 
 
 """This is made by generic view """
-
 
 # class RentList(generics.ListCreateAPIView):
 #     queryset = Rent.objects.all()
@@ -187,28 +191,98 @@ class PropertyRentDetail(mixins.ListModelMixin,
 #     serializer_class = RentSerializer
 
 
-"""This is made by Routing scheme"""
+"""This is made by Routing scheme using Viewset)"""
 
 
-class RentListViewSet(viewsets.ViewSet):
+# class RentListViewSet(viewsets.ViewSet):
+#
+#     def list(self, request):
+#         queryset = Rent.objects.all()
+#         serializer = RentSerializer(queryset, many=True)
+#         return Response(serializer.data)
+#
+#     def create(self, request):
+#         serializer = RentSerializer(data=request.data)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response(serializer.data, status=status.HTTP_200_OK)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def list(self, request):
-        queryset = Rent.objects.all()
-        serializer = RentSerializer(queryset, many=True)
-        return Response(serializer.data)
 
-    def create(self, request):
-        serializer = RentSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+# class RentDetailViewSet(viewsets.ViewSet):
+#     lookup_value_regex = '[0-9]{32}'
+#
+#     def get_object(self, pk):
+#         try:
+#             return Rent.objects.get(pk=pk)
+#         except Rent.DoesNotExist:
+#             raise Http404
+#
+#     # @action(detail=True, method=['GET'])
+#     def retrieve(self, request, pk=None):
+#         # import pdb;
+#         # pdb.set_trace()
+#         rent_obj = self.get_object(pk)
+#         serializer = RentSerializer(rent_obj)
+#         return Response(serializer.data, status=status.HTTP_200_OK)
+#
+#     def destroy(self, request, pk=None):
+#         rent_obj = self.get_object(pk)
+#         # serializer = RentSerializer(data=request.data)
+#         rent_obj.delete()
+#         return Response(status=status.HTTP_204_NO_CONTENT)
+#
+#     def update(self, request, pk=None):
+#         rent_obj = self.get_object(pk)
+#         serializer = RentSerializer(rent_obj, data=request.data)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response(serializer.data, status=status.HTTP_200_OK)
+#         return Response(status=status.HTTP_400_BAD_REQUEST)
+#
+#     def partial_update(self, request, pk=None):
+#         # import pdb;
+#         # pdb.set_trace()
+#         rent_obj = self.get_object(pk)
+#         serializer = RentSerializer(rent_obj, data=request.data)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response(serializer.data, status=status.HTTP_200_OK)
+#         return Response(status=status.HTTP_400_BAD_REQUEST)
+#
+#     # @action(detail=True, methods=['GET'], name='Check yourself')
+#     # def hello(self, request, pk=None):
+#     #     rent_obj = self.get_object(pk)
+#     #     serializer = RentSerializer(rent_obj)
+#     #     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class RentDetailViewSet(viewsets.ViewSet):
+"""This is made by Routing scheme and GenricViewSet"""
 
-    def retrieve(self, request, pk):
-        import pdb;pdb.set_trace()
-        rent = get_object_or_404(Rent, pk=pk)
-        serializer = RentSerializer(rent)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+# class RentListViewSet(mixins.ListModelMixin,
+#                       mixins.CreateModelMixin,
+#                       viewsets.GenericViewSet):
+#     queryset = Rent.objects.all()
+#     serializer_class = RentSerializer
+#
+#
+# class RentDetailViewSet(mixins.RetrieveModelMixin,
+#                         mixins.UpdateModelMixin,
+#                         mixins.DestroyModelMixin,
+#                         viewsets.GenericViewSet):
+#     queryset = Rent.objects.all()
+#     serializer_class = RentSerializer
+
+
+"""This is made by Routing scheme using ModelViewSet"""
+
+
+class RentListViewSet(viewsets.ModelViewSet):
+    queryset = Rent.objects.all()
+    serializer_class = RentSerializer
+
+
+class RentDetailViewSet(viewsets.ModelViewSet):
+    queryset = Rent.objects.all()
+    serializer_class = RentSerializer
+
